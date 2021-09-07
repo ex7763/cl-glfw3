@@ -1,6 +1,6 @@
 # cl-glfw3
 
-Bindings for the [GLFW library](http://glfw.org/), version 3.x, for Common Lisp.
+Bindings for the [GLFW library](http://glfw.org/), version 3.4, for Common Lisp.
 
 These bindings have been enhanced with several conveniences, as described in [cl-glfw3.lisp](./cl-glfw3.lisp).
 
@@ -14,15 +14,12 @@ cl-glfw3 is Quicklisp installable! Just type:
 (ql:quickload :cl-glfw3)
 ```
 
-Running the resulting system requires [GLFW](http://www.glfw.org/) version 3.x and [libffi](http://sourceware.org/libffi/) to be installed on your computer.
+Running the resulting system requires [GLFW](http://www.glfw.org/) version **3.4** and [libffi](http://sourceware.org/libffi/) to be installed on your computer.
 
 #### OSX
 
- - `brew install glfw libffi`
+Build form source code
 
-#### Ubuntu/Debian
-
- - `sudo apt-get install libglfw3 libffi-dev`
 
 ### Examples
 

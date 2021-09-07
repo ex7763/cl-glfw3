@@ -98,7 +98,7 @@
 (defmacro def-error-callback (name (message) &body body)
   (let ((error-code (gensym "error-code")))
     `(%glfw:define-glfw-callback ,name
-	 ((,error-code :int) (,message :string))
+     ((,error-code :int) (,message :string))
        (declare (ignore ,error-code))
        ,@body)))
 
@@ -120,7 +120,7 @@
   `(progn
      (let ((prev-error-fun (set-error-callback 'default-error-fun)))
        (unless (cffi:null-pointer-p prev-error-fun)
-	 (%glfw:set-error-callback prev-error-fun)))
+     (%glfw:set-error-callback prev-error-fun)))
      (initialize)
      (unwind-protect (progn ,@body)
        (%glfw:terminate))))
@@ -136,45 +136,65 @@
   "The window that is currently the default for this library. Can be set through MAKE-CONTEXT-CURRENT.")
 
 (defun create-window (&key
-			(width 0) (height 0)
-			title
-			(monitor (cffi:null-pointer))
-			(shared (cffi:null-pointer))
-			;; Hints
-			(resizable t)
-			(visible t)
-			(decorated t)
-			(red-bits 8) (green-bits 8) (blue-bits 8) (alpha-bits 8)
-			(depth-bits 24) (stencil-bits 8)
-			(accum-red-bits 0) (accum-green-bits 0) (accum-blue-bits 0)
-			(accum-alpha-bits 0)
-			(aux-buffers 0)
-			(samples 0)
-			(refresh-rate 0)
-			(stereo nil)
-			(srgb-capable nil)
-			(client-api :opengl-api)
-			(context-version-major 1)
-			(context-version-minor 0)
-			(context-robustness :no-robustness)
-			(opengl-forward-compat nil)
-			(opengl-debug-context nil)
-			(opengl-profile :opengl-any-profile))
+            (width 0) (height 0)
+            title
+            (monitor (cffi:null-pointer))
+            (shared (cffi:null-pointer))
+            ;; Hints
+            (resizable t)
+            (visible t)
+            (decorated t)
+            (auto-iconify nil)
+            (floating nil)
+            (maximized nil)
+            (center-cursor nil)
+            (transparent-framebuffer nil)
+            ;(hovered nil)
+            (focus-on-show nil)
+            (mouse-passthrough nil)
+            (red-bits 8) (green-bits 8) (blue-bits 8) (alpha-bits 8)
+            (depth-bits 24) (stencil-bits 8)
+            (accum-red-bits 0) (accum-green-bits 0) (accum-blue-bits 0)
+            (accum-alpha-bits 0)
+            (aux-buffers 0)
+            (samples 0)
+            (refresh-rate 0)
+            (stereo nil)
+            (srgb-capable nil)
+            (client-api :opengl-api)
+            (context-version-major 1)
+            (context-version-minor 0)
+            (context-robustness :no-robustness)
+            (opengl-forward-compat nil)
+            (opengl-debug-context nil)
+            (opengl-profile :opengl-any-profile)
+            (scale-to-monitor nil)
+            (cocoa-retina-framebuffer nil)
+            (cocoa-graphics-switching nil)
+            )
   "This function handles all window hints.
 
 MONITOR: The monitor on which the window should be full-screen.
 SHARED: The window whose context to share resources with."
   (macrolet ((output-hints (&rest hints)
-	       `(progn
-		  ,@(loop for (name type) in hints collect
-			 `(%glfw:window-hint
-			   ,(intern (string-upcase
-				    (symbol-name name)) :keyword)
-			   (cffi:convert-to-foreign ,name ,type))))))
+           `(progn
+          ,@(loop for (name type) in hints collect
+             `(%glfw:window-hint
+               ,(intern (string-upcase
+                    (symbol-name name)) :keyword)
+               (cffi:convert-to-foreign ,name ,type))))))
     (output-hints
      (resizable :boolean)
      (visible :boolean)
      (decorated :boolean)
+     (auto-iconify :boolean)
+     (floating :boolean)
+     (maximized :boolean)
+     (center-cursor :boolean)
+     (transparent-framebuffer :boolean)
+     ;(hovered :boolean)
+     (focus-on-show :boolean)
+     (mouse-passthrough :boolean)
      (red-bits :int) (green-bits :int) (blue-bits :int) (alpha-bits :int)
      (depth-bits :int) (stencil-bits :int)
      (accum-red-bits :int) (accum-green-bits :int) (accum-blue-bits :int)
@@ -190,11 +210,15 @@ SHARED: The window whose context to share resources with."
      (context-robustness '%glfw::robustness)
      (opengl-forward-compat :boolean)
      (opengl-debug-context :boolean)
-     (opengl-profile '%glfw::opengl-profile)))
+     (opengl-profile '%glfw::opengl-profile)
+     (scale-to-monitor :boolean)
+     (cocoa-retina-framebuffer :boolean)
+     (cocoa-graphics-switching :boolean)
+     ))
   (let ((window (%glfw:create-window width height title monitor shared)))
     (if (cffi:null-pointer-p window)
-	(error "Error creating window.")
-	(if (eq client-api :no-api)
+    (error "Error creating window.")
+    (if (eq client-api :no-api)
             (setf *window* window)
             (make-context-current window)))))
 
@@ -206,9 +230,9 @@ SHARED: The window whose context to share resources with."
 (defmacro with-window ((&rest window-keys) &body body)
   "Convenience macro for using windows."
   `(unwind-protect
-	(progn
-	  (create-window ,@window-keys)
-	  ,@body)
+    (progn
+      (create-window ,@window-keys)
+      ,@body)
      (destroy-window)))
 
 (defmacro with-init-window ((&rest window-keys) &body body)
@@ -364,10 +388,10 @@ SHARED: The window whose context to share resources with."
 
 (defun set-input-mode (mode value &optional (window *window*))
   (let ((value (ccase mode
-		 (:cursor
-		  (cffi:convert-to-foreign value '%glfw::cursor-mode))
-		 ((:sticky-keys :sticky-mouse-buttons)
-		  (cffi:convert-to-foreign value :boolean)))))
+         (:cursor
+          (cffi:convert-to-foreign value '%glfw::cursor-mode))
+         ((:sticky-keys :sticky-mouse-buttons)
+          (cffi:convert-to-foreign value :boolean)))))
     (%glfw:set-input-mode window mode value)))
 
 (defun get-key (key &optional (window *window*))
@@ -385,20 +409,20 @@ SHARED: The window whose context to share resources with."
 (defmacro def-key-callback (name (window key scancode action mod-keys) &body body)
   `(%glfw:define-glfw-callback ,name
        ((,window :pointer) (,key %glfw::key) (,scancode :int)
-	(,action %glfw::key-action) (,mod-keys %glfw::mod-keys))
+    (,action %glfw::key-action) (,mod-keys %glfw::mod-keys))
      ,@body))
 
 (defmacro def-char-callback (name (window char) &body body)
   (let ((char-code (gensym "char")))
     `(%glfw:define-glfw-callback ,name
-	((,window :pointer) (,char-code :unsigned-int))
+    ((,window :pointer) (,char-code :unsigned-int))
       (let ((,char (code-char ,char-code)))
-	,@body))))
+    ,@body))))
 
 (defmacro def-mouse-button-callback (name (window button action mod-keys) &body body)
   `(%glfw:define-glfw-callback ,name
        ((,window :pointer) (,button %glfw::mouse)
-	(,action %glfw::key-action) (,mod-keys %glfw::mod-keys))
+    (,action %glfw::key-action) (,mod-keys %glfw::mod-keys))
      ,@body))
 
 (defmacro def-cursor-pos-callback (name (window x y) &body body)
